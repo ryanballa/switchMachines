@@ -31,17 +31,14 @@ Servo turnout2;
 Servo turnout3;
 Servo turnout4;
 
- int turnoutPos[] = {0, 0, 0, 0, 0};
- int isDiverging[] = {false, false, false, false, false};
+// Change to 45 to make diverging by default
+int turnoutPos[] = {0, 0, 0, 0, 0};
+// Change to false to make diverging by default
+int isDiverging[] = {false, false, false, false, false};
  
 void setup()
 {
   Serial.begin(9600);
-  
-  turnout1.attach(TURNOUT_SERVO_PIN_1);
-  turnout2.attach(TURNOUT_SERVO_PIN_2);
-  turnout3.attach(TURNOUT_SERVO_PIN_3);
-  turnout4.attach(TURNOUT_SERVO_PIN_4);
   
   pinMode(BUTTON_PIN_1,INPUT_PULLUP);
   pinMode(2, INPUT);
@@ -75,24 +72,26 @@ void setup()
   animateLEDs(turnoutPos[2], RED_LED_PIN_2, GREEN_LED_PIN_2);
   animateLEDs(turnoutPos[3], RED_LED_PIN_3, GREEN_LED_PIN_3);
   animateLEDs(turnoutPos[4], RED_LED_PIN_4, GREEN_LED_PIN_4);
+  
 }
 
 void loop()
-{  
+{
+
+  // Buttons
   debouncer1.update();
   if (debouncer1.rose()) {
-    Serial.print("Button press 1");
+    turnout1.attach(TURNOUT_SERVO_PIN_1);
     isDiverging[1] = turnoutPos[1] == 0 ? true : false;
     while(animateTurnout(turnoutPos[1], isDiverging[1], 1)){
       animateLEDs(turnoutPos[1], RED_LED_PIN_1, GREEN_LED_PIN_1);
-      Serial.println(turnoutPos[1]);
       turnout1.write(turnoutPos[1]);
     };
+    turnout1.detach();
   }
 
   debouncer2.update();
   if (debouncer2.rose()) {
-    Serial.print("Button press 2");
     isDiverging[2] = turnoutPos[2] == 0 ? true : false;
     while(animateTurnout(turnoutPos[2], isDiverging[2], 2)){
       animateLEDs(turnoutPos[2], RED_LED_PIN_2, GREEN_LED_PIN_2);
@@ -102,7 +101,6 @@ void loop()
 
   debouncer3.update();
   if (debouncer3.rose()) {
-    Serial.print("Button press 3");
     isDiverging[3] = turnoutPos[3] == 0 ? true : false;
     while(animateTurnout(turnoutPos[3], isDiverging[3], 3)){
       animateLEDs(turnoutPos[3], RED_LED_PIN_3, GREEN_LED_PIN_3);
@@ -112,7 +110,6 @@ void loop()
 
   debouncer4.update();
   if (debouncer4.rose()) {
-    Serial.print("Button press 4");
     isDiverging[4] = turnoutPos[4] == 0 ? true : false;
     while(animateTurnout(turnoutPos[4], isDiverging[4], 4)){
       animateLEDs(turnoutPos[4], RED_LED_PIN_4, GREEN_LED_PIN_4);
@@ -139,21 +136,16 @@ bool animateLEDs(int pos, int red, int green) {
 bool animateTurnout(int pos, int diverging, int turnoutNum) {
   if (diverging) {
     while(pos<=89) {
-      // Serial.print("Switch lights on for light ");
       delay(50);
-      // Serial.println(turnoutPos[turnoutNum]);
       turnoutPos[turnoutNum] = turnoutPos[turnoutNum] + 1;
       return true;
     } 
   } else {
     while(pos>=1) {
-      // Serial.print("Switch lights off for light ");
       delay(50);
-      // Serial.println(turnoutPos[turnoutNum]);
       turnoutPos[turnoutNum] = turnoutPos[turnoutNum] - 1;
       return true; 
     } 
   }
   return false;
 }
-
