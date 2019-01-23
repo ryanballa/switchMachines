@@ -17,7 +17,7 @@
 #define TURNOUT_SERVO_PIN_3 A1
 
 #define BUTTON_PIN_4 8
-#define RED_LED_PIN_4 13
+#define RED_LED_PIN_4 1
 #define GREEN_LED_PIN_4 12
 #define TURNOUT_SERVO_PIN_4 A2
 
@@ -39,6 +39,13 @@ int isDiverging[] = {false, false, false, false, false};
 void setup()
 {
   Serial.begin(9600);
+
+  pinMode(A0, INPUT);
+  digitalWrite(A0, HIGH);
+  pinMode(A1, OUTPUT);
+  digitalWrite(A1, HIGH);
+  pinMode(A2, OUTPUT);
+  digitalWrite(A2, HIGH);
   
   pinMode(BUTTON_PIN_1,INPUT_PULLUP);
   pinMode(2, INPUT);
@@ -78,6 +85,11 @@ void setup()
 void loop()
 {
 
+  animateTurnout(turnoutPos[1], isDiverging[1], 1);
+  animateTurnout(turnoutPos[2], isDiverging[2], 2);
+  animateTurnout(turnoutPos[3], isDiverging[3], 3);
+  animateTurnout(turnoutPos[4], isDiverging[4], 4);
+
   // Buttons
   debouncer1.update();
   if (debouncer1.rose()) {
@@ -92,34 +104,40 @@ void loop()
 
   debouncer2.update();
   if (debouncer2.rose()) {
+    turnout2.attach(TURNOUT_SERVO_PIN_2);
     isDiverging[2] = turnoutPos[2] == 0 ? true : false;
     while(animateTurnout(turnoutPos[2], isDiverging[2], 2)){
       animateLEDs(turnoutPos[2], RED_LED_PIN_2, GREEN_LED_PIN_2);
       turnout2.write(turnoutPos[2]);
     };
+    turnout2.detach();
   }
 
   debouncer3.update();
   if (debouncer3.rose()) {
+    turnout3.attach(TURNOUT_SERVO_PIN_3);
     isDiverging[3] = turnoutPos[3] == 0 ? true : false;
     while(animateTurnout(turnoutPos[3], isDiverging[3], 3)){
       animateLEDs(turnoutPos[3], RED_LED_PIN_3, GREEN_LED_PIN_3);
       turnout3.write(turnoutPos[3]);
     };
+    turnout3.detach();
   }
 
   debouncer4.update();
   if (debouncer4.rose()) {
+    turnout4.attach(TURNOUT_SERVO_PIN_4);
     isDiverging[4] = turnoutPos[4] == 0 ? true : false;
     while(animateTurnout(turnoutPos[4], isDiverging[4], 4)){
       animateLEDs(turnoutPos[4], RED_LED_PIN_4, GREEN_LED_PIN_4);
       turnout4.write(turnoutPos[4]);
     };
+    turnout4.detach();
   }
 }
 
 bool animateLEDs(int pos, int red, int green) {
-  if (pos != 0 || pos != 90) {
+  if (pos != 0 || pos != 60) {
     if (pos % 10 == 0 && pos != 0) {
       digitalWrite(red, HIGH);
       digitalWrite(green, LOW);
@@ -135,7 +153,7 @@ bool animateLEDs(int pos, int red, int green) {
 
 bool animateTurnout(int pos, int diverging, int turnoutNum) {
   if (diverging) {
-    while(pos<=89) {
+    while(pos<=59) {
       delay(50);
       turnoutPos[turnoutNum] = turnoutPos[turnoutNum] + 1;
       return true;
